@@ -17,9 +17,8 @@ houses <- read_csv('houses.csv')
     
 # LASSO
 gridLength <- 1000 
-grid       <- 10^seq(6, 1,length = gridLength)
+grid       <- 10^seq(6, -1,length = gridLength)
 model      <- glmnet(x = X, y = y, alpha = 1, standardize = TRUE, lambda = grid)
-# model %>% plot(xvar = 'lambda', label = T)
 
 # Montando os data frames com os valores de coeficiente, % do MQO e lambda:
 numctodf <- function(x){data.frame(as.list(x))}
@@ -35,6 +34,7 @@ for(k in c(2:(gridLength))){
 }
 
 lambda = data.frame(log(model$lambda,base = 10)) %>% rename(lambda = 1)
+
 # Função que transforma o data frame dos coeficientes num df long indexado por variavel e valor de lambda
 cleanCoefs <- function(x){data.frame(x, lambda) %>% 
                 dplyr::select(-1,-2) %>% 
@@ -44,7 +44,12 @@ cleanCoefs <- function(x){data.frame(x, lambda) %>%
 # Cria o df de coeficientes e o df em % do valor de MQO e joina ambos
 beta2      <- cleanCoefs(beta2)
 beta2pad   <- cleanCoefs(beta2pad)
-betasFinal <- left_join(x = beta2, y = beta2pad, by = c('lambda'='lambda', 'Variavel'='Variavel'))
+betas3     <- left_join(x = beta2, y = beta2pad, by = c('lambda'='lambda', 'Variavel'='Variavel')) 
+betaNorms  <- betasFinal %>%
+                group_by(lambda) %>% 
+                summarise(soma = sum(abs(value.x))/sum(abs(coef(model)[-1,gridLength])))
+betasFinal <- left_join(x = betas3, y = betaNorms, by = c('lambda'='lambda'))
+              
 
 # Caminho dos coeficientes, comparação LASSO vs MQO:
 g1 <- betasFinal %>% ggplot(aes(x = lambda, y = value.x)) + 
@@ -52,12 +57,14 @@ g1 <- betasFinal %>% ggplot(aes(x = lambda, y = value.x)) +
         ggtitle(TeX('Coeficientes vs. $\\lambda$')) + 
         xlab(TeX('log$\\lambda$')) + ylab('Coeficiente') 
 
- 
-g2 <- betasFinal %>% ggplot(aes(x = value.y, y = value.x))+ geom_line(aes(color = Variavel), lwd=1.2) +
+g2 <- betasFinal %>% ggplot(aes(x = soma, y = value.x)) +
+        geom_path(aes(color = Variavel), lwd=1.2) +
         ggtitle('LASSO/MQO (%)') + 
-        xlab(TeX('$||\\beta_{R}||.||\\beta_{MQO}||^{-1}$')) + ylab('Coeficiente')  + guides(color = F) 
+        xlab(TeX('$||\\beta_{R}||.||\\beta_{MQO}||^{-1}$')) +
+        ylab('Coeficiente')  + guides(color = F) 
   
-g3 <- betasFinal %>% ggplot(aes(x = lambda,y = value.y)) + 
+g3 <- betasFinal%>%
+        ggplot(aes(x = lambda,y = value.y)) + 
         geom_line(aes(color = Variavel), lwd=1.2) +
         ggtitle(TeX('$||\\beta_{L}||.||\\beta_{MQO}||^{-1}$ vs. $\\lambda$')) + 
         xlab(TeX('log$\\lambda$')) + ylab('%') + guides(color = F)  
