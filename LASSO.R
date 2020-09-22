@@ -66,7 +66,7 @@ g2 <- betasFinal %>% ggplot(aes(x = soma, y = value.x)) +
 g3 <- betasFinal%>%
         ggplot(aes(x = lambda,y = value.y)) + 
         geom_line(aes(color = Variavel), lwd=1.2) +
-        ggtitle(TeX('$||\\beta_{L}||.||\\beta_{MQO}||^{-1}$ vs. $\\lambda$')) + 
+        ggtitle(TeX('$|\\beta_{L}|.|\\beta_{MQO}|^{-1}$ vs. $\\lambda$')) + 
         xlab(TeX('log$\\lambda$')) + ylab('%') + guides(color = F)  
 
 # Organiza os graficos utilizando o patchwork:
