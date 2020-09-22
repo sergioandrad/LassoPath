@@ -57,12 +57,12 @@ g1 <- betasFinal %>% ggplot(aes(x = lambda,y = value.x)) +
 
  
 g2 <- betasFinal %>% ggplot(aes(x = value.y, y = value.x))+ geom_line(aes(color = Variavel), lwd=1.2) +
-        ggtitle('Ridge/MQO (%)') + 
+        ggtitle('LASSO/MQO (%)') + 
         xlab(TeX('$||\\beta_{R}||.||\\beta_{MQO}||^{-1}$')) + ylab('Coeficiente')  + guides(color = F) 
   
 g3 <- betasFinal %>% ggplot(aes(x = lambda,y = value.y)) + 
         geom_line(aes(color = Variavel), lwd=1.2) +
-        ggtitle(TeX('$||\\beta_{R}||.||\\beta_{MQO}||^{-1}$ vs. $\\lambda$')) + 
+        ggtitle(TeX('$||\\beta_{L}||.||\\beta_{MQO}||^{-1}$ vs. $\\lambda$')) + 
         xlab(TeX('$\\lambda$')) + ylab('%') + guides(color = F)  
 
 # Organiza os graficos utilizando o patchwork:
